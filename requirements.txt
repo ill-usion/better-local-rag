@@ -1,0 +1,8 @@
+python-dotenv
+pandas
+ipykernel
+openpyxl
+pyyaml
+langchain
+langchain-chroma
+langchain-localai

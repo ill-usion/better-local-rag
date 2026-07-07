@@ -1,0 +1,4 @@
+model: "google/gemma-4-e2b"
+embedding_model: "nomic-ai/nomic-embed-text-v1.5-GGUF"
+base_url: "http://localhost:1234/v1"
+chroma_dir: "chroma_embeddings"

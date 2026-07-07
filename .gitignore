@@ -1,0 +1,6 @@
+.env
+.venv
+*.parquet
+*.xlsx
+__pycache__
+chroma_embeddings
