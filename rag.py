@@ -68,6 +68,7 @@ def answer_question():
     answer_question_prompt = """ 
     Use the following pieces of retrieved context to answer the question. \
     Use three to seven sentences maximum and keep the answer concise, while still giving depth.\
+    Structure your output in a list. \
 
     {context}"""
 
@@ -121,8 +122,6 @@ def make_app():
 
 if __name__ == "__main__":
     app = make_app()
-
-    app = workflow.compile(checkpointer=memory)
     result = app.invoke(
         {"input": input("Ask something: ")},
         config={"configurable": {"thread_id": "123asd"}}
