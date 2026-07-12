@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAG Chat Interface</title>
+    <link href="{{ url_for('static', filename='bootstrap.min.css') }}" rel="stylesheet"
+        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            padding: 0px;
+        }
+    </style>
+</head>
+
+<body>
+    <main class="container min-vh-100 d-flex flex-column">
+
+        <h1 class="text-center">RAG Chat Interface</h1>
+
+        <div id="chat-history" class="flex-grow-1 overflow-auto">
+            <div class="chat-message">
+                <p class="fw-bold m-0">System</p>
+                <p>Ask about the BlazeAndCave's advancements pack</p>
+            </div>
+        </div>
+
+        <form id="input-form" class="input-group sticky-bottom bg-body py-2">
+            <div class="form-floating flex-grow-1">
+                <input type="text" id="message-input" class="form-control" placeholder="Message">
+                <label for="message-input">Message</label>
+            </div>
+            <button class="btn btn-primary" type="submit">
+                Send
+            </button>
+        </form>
+
+    </main>
+    <script type="module">
+        import { marked } from "{{ url_for('static', filename='marked.esm.js') }}"
+
+        document.getElementById("input-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const textInput = document.getElementById("message-input");
+
+            if (textInput.value === "")
+                return;
+
+            const userMessage = textInput.value;
+            const chatHistory = document.getElementById("chat-history");
+            const myMessage = `<div class="chat-message text-end"><p class="fw-bold m-0">You</p>${marked.parse(userMessage)}</div>`
+
+            chatHistory.innerHTML += myMessage;
+            textInput.value = "";
+
+            var responseChunks = "";
+
+            const assistantChatMessage = document.createElement("div");
+            assistantChatMessage.classList.add("chat-message");
+
+            const assistantLabel = document.createElement("p");
+            assistantLabel.innerText = "Assistant";
+            assistantLabel.classList.add("m-0", "fw-bold");
+
+            const assistantStatus = document.createElement("sub");
+            assistantStatus.classList.add("fst-italic", "fw-light", "d-inline-block", "m-0");
+
+            const assistantMessage = document.createElement("div");
+
+            assistantChatMessage.append(assistantLabel, assistantStatus, assistantMessage);
+            chatHistory.append(assistantChatMessage);
+
+            const response = await fetch("/ask", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ input: userMessage })
+            });
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                const text = decoder.decode(value);
+                const data = JSON.parse(text);
+                console.log(data)
+                if (data.event != "chunk") {
+                    assistantStatus.innerText = data.data;
+                }
+                else {
+                    responseChunks += data.data;
+                    assistantMessage.innerHTML = marked.parse(responseChunks);
+                }
+            }
+        });
+
+    </script>
+</body>
