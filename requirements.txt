@@ -11,3 +11,4 @@ langchain-classic
 langchain-community
 langgraph
 langgraph-checkpoint
+Flask
